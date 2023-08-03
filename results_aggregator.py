@@ -178,6 +178,16 @@ def filter_folders_to_empty(subfolders, subfolders_new_location):
     return subfolders, subfolders_new_location
 
 
+def filter_datasets(subfolders, list_include, list_exclude):
+    filtered = []
+
+    for folder in subfolders:
+        if all(word in folder for word in list_include) and not any(word in folder for word in list_exclude):
+            filtered.append(folder)
+
+    return filtered
+
+
 # if __name__ == "__main__":
 
 #     # TESTING

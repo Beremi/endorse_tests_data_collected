@@ -395,16 +395,10 @@ class MultiRawData:
         names = []
         for folder in folders_list:
             # find hdf5 file in folder
-            path_to_file = None
-            path_to_config = None
+            path_to_file = os.path.join(folder, "raw_data.hdf5")
+            path_to_config = os.path.join(folder, "common_files", "config_mcmc_bayes.yaml")
 
-            for file in os.listdir(folder):
-                if file.endswith(".hdf5"):
-                    path_to_file = os.path.join(folder, file)
-                if file.endswith(".yaml"):
-                    path_to_config = os.path.join(folder, file)
-
-            if (path_to_file is None) or (path_to_config is None):
+            if not (os.path.exists(path_to_file)) and (os.path.exists(path_to_config)):
                 # if no hdf5 file found, skip folder
                 print("No hdf5 file or config found in folder ", folder)
                 continue
@@ -489,12 +483,3 @@ class MultiRawData:
         all_sizes["run_ids"] = self.run_ids.shape
         print("raw_data: all_sizes:", all_sizes)
 
-
-def filter_datasets(subfolders, list_include, list_exclude):
-    filtered = []
-
-    for folder in subfolders:
-        if all(word in folder for word in list_include) and not any(word in folder for word in list_exclude):
-            filtered.append(folder)
-
-    return filtered

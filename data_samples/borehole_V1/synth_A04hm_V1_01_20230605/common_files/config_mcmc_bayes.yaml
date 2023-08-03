@@ -1,0 +1,207 @@
+# surrDAMH template (Bayesian inverse problem related to the TSX experiment)
+
+
+# GENERAL SETTINGS:
+no_parameters: 8 # number of parameters (WILL BE SET AUTOMATICALLY)
+no_observations: 26 # number of observations (WILL BE SET AUTOMATICALLY)
+save_raw_data: true # save all data (including rejected samples)
+save_transformed_data: true
+debug: false # print debug messages (true/false)
+
+
+# PRIOR DISTRIBUTION SETTINGS:
+# internally, normal distribution is used
+# if the prior distribution is not normal, transformations have to be specified
+# (WILL BE SET AUTOMATICALLY) from main config
+transformations:
+- name: storativity
+  type: normal_to_lognormal
+  options:
+    mu: -14.5662279378421
+    sigma: 2.0
+- name: young_modulus
+  type: normal_to_lognormal
+  options:
+    mu: 23.2670944048714
+    sigma: 2.0
+- name: init_stress_x
+  type: normal_to_lognormal
+  options:
+    mu: 17.8553760319809
+    sigma: 2.0
+- name: init_stress_y
+  type: normal_to_lognormal
+  options:
+    mu: 16.2134058307626
+    sigma: 2.0
+- name: perm_kr
+  type: normal_to_lognormal
+  options:
+    mu: -49.4456937078649
+    sigma: 3.0
+- name: perm_km
+  type: normal_to_lognormal
+  options:
+    mu: -33.8402223378873
+    sigma: 3.0
+- name: perm_beta
+  type: normal_to_lognormal
+  options:
+    mu: -13.1451669487322
+    sigma: 2.0
+- name: perm_gamma
+  type: normal_to_lognormal
+  options:
+    mu: -13.007626024022
+    sigma: 2.0
+initial_sample_type: prior # choice of initial samples for each chain (prior/lhs)
+samplers_list: # stages of the sampling process (here MH, DAMH-SMU, DAMH)
+
+# stage 1: initial surrogate model created during MH sampling
+- type: MH # sampling algorithm (MH/DAMH)
+  surrogate_is_updated: true
+  proposal_std: 0.1
+  #max_samples: 2
+  #time_limit: 180 # 10800 # 3600 # 14400
+  max_samples: 10000 # 10000 # 10000
+  time_limit: 10800 # 3600 # 14400 # 10800
+
+# stage 2: DAMH algorithm with surrogate model updates
+- type: DAMH
+  surrogate_is_updated: true
+  proposal_std: 0.2
+  #max_samples: 2
+  #time_limit: 180 # 10800 # 7200 # 1200 # 14400
+  max_samples: 30000 # 30000 # 100000-to much
+  time_limit: 28800 # 10800 # 7200 # 1200 # 14400 # 28800 # 36000
+
+# stage 3: DAMH algorithm, surrogate model is no longer updated
+#- type: DAMH
+#  surrogate_is_updated: false
+#  proposal_std: 0.3
+#  max_samples: 100000
+#  time_limit: 7200 # 10800 # 7200 # 1200 # 7200
+
+# SOLVER SETTINGS (here Flow123d wrapper):
+no_solvers: 19 # number of solvers running in parallel
+solver_module_name: flow_wrapper
+# solver_module_path WILL BE SET AUTOMATICALLY by process.py
+solver_module_path: /auto/liberec3-tul/home/pavel_exner/workspace/endorse/src/endorse/bayes_orig/flow_wrapper.py
+solver_init_name: Wrapper
+solver_returns_tag: true # wrapper returns [convergence_tag, collected_values]
+solver_parameters: {} # optional wrapper-specific parameters
+pickled_observations: false
+
+# surrogate model settings:
+#surrogate_type: rbf # type of surrogate model (rbf/poly)
+## polynominal surrogate model requires different parameters
+#surr_solver_parameters:
+#  kernel_type: 1
+#surr_updater_parameters:
+#  expensive: false
+#  kernel_type: 1
+#  no_keep: 5000
+
+surrogate_type: poly
+surr_updater_parameters:
+  max_degree: 10
+
+
+# PARAMETERS OF THE BAYESIAN INVERSE PROBLEM:
+# instead of problem_parameters["noise_std"], noise_type + noise_parameters + noise_grid is specified
+#noise_type: Gaussian_process # WILL BE SET AUTOMATICALLY
+#noise_parameters: # WILL BE SET AUTOMATICALLY
+#- - 30
+#  - 50
+#noise_grid: # WILL BE SET AUTOMATICALLY
+#- 0.0
+
+# WILL BE SET AUTOMATICALLY
+# observation vector can be constructed from several quantities
+# each can time-dependent with different time grid
+# [q1_1...q1_N1, q2_1...N2, q3_1...N3, ...]
+noise_model:
+- corr_length: 0
+  std: 30
+  cov_type: default
+  time_grid:
+  - 0.0
+  - 10.0
+  - 17.0
+  - 27.0
+  - 37.0
+  - 47.0
+  - 57.0
+  - 67.0
+  - 77.0
+  - 87.0
+  - 97.0
+  - 100.0
+  - 120.0
+  - 140.0
+  - 160.0
+  - 180.0
+  - 200.0
+  - 220.0
+  - 240.0
+  - 260.0
+  - 280.0
+  - 300.0
+  - 320.0
+  - 340.0
+  - 360.0
+  - 365.0
+  range:
+  - 0
+  - 26
+problem_parameters:
+# internal distribution (before transformation) is N(prior_mean,prior_std)
+# if prior_mean and prior_std is not specified, default internal distribution is N(0,1)
+# if noise is not Gaussian_process and noise_std is not specified, default noise distribution is N(0,1)
+  prior_mean: # scalar/vector # WILL BE SET AUTOMATICALLY
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  prior_std: # scalar/vector/covariance matrix # WILL BE SET AUTOMATICALLY
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  observations: # observations WILL BE SET AUTOMATICALLY by measured_data.py
+  - 292.08740132831537
+  - 609.5428047143749
+  - 836.6621863956755
+  - 775.6438305430424
+  - 725.1248703006241
+  - 701.5853071690262
+  - 651.0882622566088
+  - 636.6898452363822
+  - 609.3752850826573
+  - 595.086418669906
+  - 559.7556977439559
+  - 532.4949119612048
+  - 517.7992603552126
+  - 463.7992266250442
+  - 455.6747489896193
+  - 416.1632655027682
+  - 424.4667197260338
+  - 381.1545557418355
+  - 378.91174524171794
+  - 351.7607182936004
+  - 339.713282299853
+  - 331.1631617593126
+  - 312.7136775582625
+  - 303.7945499825156
+  - 299.2854409450363
+  - 283.3483874383154
+observe_points:
+- V1

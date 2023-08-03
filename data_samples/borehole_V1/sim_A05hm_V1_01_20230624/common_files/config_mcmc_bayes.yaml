@@ -1,0 +1,200 @@
+# surrDAMH template (Bayesian inverse problem related to the TSX experiment)
+
+
+# GENERAL SETTINGS:
+no_parameters: 9 # number of parameters (WILL BE SET AUTOMATICALLY)
+no_observations: 26 # number of observations (WILL BE SET AUTOMATICALLY)
+save_raw_data: true # save all data (including rejected samples)
+save_transformed_data: true
+debug: false # print debug messages (true/false)
+
+
+# PRIOR DISTRIBUTION SETTINGS:
+# internally, normal distribution is used
+# if the prior distribution is not normal, transformations have to be specified
+# (WILL BE SET AUTOMATICALLY) from main config
+transformations:
+- name: storativity
+  type: normal_to_lognormal
+  options:
+    mu: -14.5662279378421
+    sigma: 2.0
+- name: young_modulus
+  type: normal_to_lognormal
+  options:
+    mu: 23.2670944048714
+    sigma: 2.0
+- name: init_stress_x
+  type: normal_to_lognormal
+  options:
+    mu: 17.8553760319809
+    sigma: 2.0
+- name: init_stress_y
+  type: normal_to_lognormal
+  options:
+    mu: 16.2134058307626
+    sigma: 2.0
+- name: perm_kr
+  type: normal_to_lognormal
+  options:
+    mu: -49.4456937078649
+    sigma: 3.0
+- name: perm_km
+  type: normal_to_lognormal
+  options:
+    mu: -33.8402223378873
+    sigma: 3.0
+- name: perm_beta
+  type: normal_to_lognormal
+  options:
+    mu: -13.1451669487322
+    sigma: 2.0
+- name: sigmoid_a
+  type: normal_to_lognormal
+  options:
+    mu: -15.828821161
+    sigma: 2.0
+- name: sigmoid_b
+  type: normal_to_lognormal
+  options:
+    mu: 17.897622698
+    sigma: 2.0
+initial_sample_type: prior # choice of initial samples for each chain (prior/lhs)
+samplers_list: # stages of the sampling process (here MH, DAMH-SMU, DAMH)
+
+# stage 1: initial surrogate model created during MH sampling
+- type: MH
+  surrogate_is_updated: true
+  proposal_std: 0.02
+  max_samples: 50000
+  time_limit: 57600
+no_solvers: 19 # number of solvers running in parallel
+solver_module_name: flow_wrapper
+# solver_module_path WILL BE SET AUTOMATICALLY by process.py
+solver_module_path: /auto/liberec3-tul/home/pavel_exner/workspace/endorse/src/endorse/bayes_orig/flow_wrapper.py
+solver_init_name: Wrapper
+solver_returns_tag: true # wrapper returns [convergence_tag, collected_values]
+solver_parameters: {} # optional wrapper-specific parameters
+pickled_observations: false
+
+# surrogate model settings:
+#surrogate_type: rbf # type of surrogate model (rbf/poly)
+## polynominal surrogate model requires different parameters
+#surr_solver_parameters:
+#  kernel_type: 1
+#surr_updater_parameters:
+#  expensive: false
+#  kernel_type: 1
+#  no_keep: 5000
+#surrogate_type: poly
+#surr_updater_parameters:
+#  max_degree: 5
+
+
+# PARAMETERS OF THE BAYESIAN INVERSE PROBLEM:
+# instead of problem_parameters["noise_std"], noise_type + noise_parameters + noise_grid is specified
+#noise_type: Gaussian_process # WILL BE SET AUTOMATICALLY
+#noise_parameters: # WILL BE SET AUTOMATICALLY
+#- - 30
+#  - 50
+#noise_grid: # WILL BE SET AUTOMATICALLY
+#- 0.0
+
+# WILL BE SET AUTOMATICALLY
+# observation vector can be constructed from several quantities
+# each can time-dependent with different time grid
+# [q1_1...q1_N1, q2_1...N2, q3_1...N3, ...]
+noise_model:
+- corr_length: 0
+  std: 25
+  cov_type: default
+  time_grid:
+  - 0.0
+  - 10.0
+  - 17.0
+  - 27.0
+  - 37.0
+  - 47.0
+  - 57.0
+  - 67.0
+  - 77.0
+  - 87.0
+  - 97.0
+  - 100.0
+  - 120.0
+  - 140.0
+  - 160.0
+  - 180.0
+  - 200.0
+  - 220.0
+  - 240.0
+  - 260.0
+  - 280.0
+  - 300.0
+  - 320.0
+  - 340.0
+  - 360.0
+  - 365.0
+  range:
+  - 0
+  - 26
+problem_parameters:
+# internal distribution (before transformation) is N(prior_mean,prior_std)
+# if prior_mean and prior_std is not specified, default internal distribution is N(0,1)
+# if noise is not Gaussian_process and noise_std is not specified, default noise distribution is N(0,1)
+  prior_mean: # scalar/vector # WILL BE SET AUTOMATICALLY
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  prior_std: # scalar/vector/covariance matrix # WILL BE SET AUTOMATICALLY
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  observations: # observations WILL BE SET AUTOMATICALLY by measured_data.py
+  - 274.4926576260765
+  - 598.0892112209613
+  - 754.6480525229028
+  - 788.3757246593943
+  - 755.0194538701197
+  - 708.2718340488675
+  - 655.959789868714
+  - 614.4782050188968
+  - 594.3969941554566
+  - 567.1784724261873
+  - 530.437457407308
+  - 523.4864235733296
+  - 519.9855749187057
+  - 488.6575738795287
+  - 473.09716489452796
+  - 449.2542960747279
+  - 427.5164686623572
+  - 375.8723373183419
+  - 350.19813812448
+  - 326.95301280994255
+  - 308.36140845047123
+  - 300.99859274112134
+  - 304.6445759333955
+  - 284.82751573597614
+  - 293.82352453078687
+  - 297.78797790282147
+observe_points:
+- V1
+surrogate_type: rbf
+surr_solver_parameters:
+  kernel_type: 0
+surr_updater_parameters:
+  expensive: false
+  kernel_type: 0
+  no_keep: 20000

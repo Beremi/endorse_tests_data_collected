@@ -1,0 +1,193 @@
+# surrDAMH template (Bayesian inverse problem related to the TSX experiment)
+
+
+# GENERAL SETTINGS:
+no_parameters: 8 # number of parameters (WILL BE SET AUTOMATICALLY)
+no_observations: 26 # number of observations (WILL BE SET AUTOMATICALLY)
+save_raw_data: true # save all data (including rejected samples)
+save_transformed_data: true
+debug: false # print debug messages (true/false)
+
+
+# PRIOR DISTRIBUTION SETTINGS:
+# internally, normal distribution is used
+# if the prior distribution is not normal, transformations have to be specified
+# (WILL BE SET AUTOMATICALLY) from main config
+transformations:
+- name: storativity
+  type: normal_to_lognormal
+  options:
+    mu: -15.99749073
+    sigma: 2.0
+- name: young_modulus
+  type: normal_to_lognormal
+  options:
+    mu: 25.5615372
+    sigma: 2.0
+- name: init_stress_x
+  type: normal_to_lognormal
+  options:
+    mu: 17.89786378
+    sigma: 2.0
+- name: init_stress_y
+  type: normal_to_lognormal
+  options:
+    mu: 16.2134058307626
+    sigma: 2.0
+- name: perm_kr
+  type: normal_to_lognormal
+  options:
+    mu: -48.20508705
+    sigma: 3.0
+- name: perm_km
+  type: normal_to_lognormal
+  options:
+    mu: -41.19507454
+    sigma: 3.0
+- name: perm_beta
+  type: normal_to_lognormal
+  options:
+    mu: -14.81288295
+    sigma: 2.0
+- name: perm_gamma
+  type: normal_to_lognormal
+  options:
+    mu: -14.4425268
+    sigma: 2.0
+initial_sample_type: prior # choice of initial samples for each chain (prior/lhs)
+samplers_list: # stages of the sampling process (here MH, DAMH-SMU, DAMH)
+
+# stage 1: initial surrogate model created during MH sampling
+- type: MH
+  surrogate_is_updated: true
+  proposal_std: 0.02
+  max_samples: 50000
+  time_limit: 57600
+no_solvers: 19 # number of solvers running in parallel
+solver_module_name: flow_wrapper
+# solver_module_path WILL BE SET AUTOMATICALLY by process.py
+solver_module_path: /home/paulie/Workspace/endorse/src/endorse/bayes_orig/flow_wrapper.py
+solver_init_name: Wrapper
+solver_returns_tag: true # wrapper returns [convergence_tag, collected_values]
+solver_parameters: {} # optional wrapper-specific parameters
+pickled_observations: false
+
+# surrogate model settings:
+#surrogate_type: rbf # type of surrogate model (rbf/poly)
+## polynominal surrogate model requires different parameters
+#surr_solver_parameters:
+#  kernel_type: 1
+#surr_updater_parameters:
+#  expensive: false
+#  kernel_type: 1
+#  no_keep: 5000
+#surrogate_type: poly
+#surr_updater_parameters:
+#  max_degree: 5
+
+
+# PARAMETERS OF THE BAYESIAN INVERSE PROBLEM:
+# instead of problem_parameters["noise_std"], noise_type + noise_parameters + noise_grid is specified
+#noise_type: Gaussian_process # WILL BE SET AUTOMATICALLY
+#noise_parameters: # WILL BE SET AUTOMATICALLY
+#- - 30
+#  - 50
+#noise_grid: # WILL BE SET AUTOMATICALLY
+#- 0.0
+
+# WILL BE SET AUTOMATICALLY
+# observation vector can be constructed from several quantities
+# each can time-dependent with different time grid
+# [q1_1...q1_N1, q2_1...N2, q3_1...N3, ...]
+noise_model:
+- corr_length: 0
+  std: 20
+  cov_type: default
+  time_grid:
+  - 0.0
+  - 10.0
+  - 17.0
+  - 27.0
+  - 37.0
+  - 47.0
+  - 57.0
+  - 67.0
+  - 77.0
+  - 87.0
+  - 97.0
+  - 100.0
+  - 120.0
+  - 140.0
+  - 160.0
+  - 180.0
+  - 200.0
+  - 220.0
+  - 240.0
+  - 260.0
+  - 280.0
+  - 300.0
+  - 320.0
+  - 340.0
+  - 360.0
+  - 365.0
+  range:
+  - 0
+  - 26
+problem_parameters:
+# internal distribution (before transformation) is N(prior_mean,prior_std)
+# if prior_mean and prior_std is not specified, default internal distribution is N(0,1)
+# if noise is not Gaussian_process and noise_std is not specified, default noise distribution is N(0,1)
+  prior_mean: # scalar/vector # WILL BE SET AUTOMATICALLY
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  prior_std: # scalar/vector/covariance matrix # WILL BE SET AUTOMATICALLY
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  observations: # observations WILL BE SET AUTOMATICALLY by measured_data.py
+  - 262.00970108619634
+  - 62.843249986131575
+  - 48.08262448100288
+  - 42.681038591463576
+  - 42.93917678143266
+  - 45.08236786944522
+  - 49.94181194643198
+  - 56.007637102484054
+  - 61.35265637436543
+  - 60.28968371081408
+  - 59.66429769637641
+  - 60.60653451083565
+  - 79.19950050268767
+  - 81.48672728810196
+  - 91.97984245675362
+  - 90.06164513633016
+  - 89.22193608913719
+  - 79.33002552259684
+  - 79.32797971798708
+  - 82.6842177813621
+  - 77.31306993967296
+  - 78.0024018399629
+  - 85.3324173501424
+  - 75.85212647719274
+  - 82.55973059689288
+  - 89.09948153884811
+observe_points:
+- H1
+surrogate_type: rbf
+surr_solver_parameters:
+  kernel_type: 0
+surr_updater_parameters:
+  expensive: false
+  kernel_type: 0
+  no_keep: 20000
